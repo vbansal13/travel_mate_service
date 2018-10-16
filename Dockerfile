@@ -11,3 +11,4 @@ WORKDIR /app
 COPY --from=build-env /src/travel_mate_app /app/
 ENTRYPOINT [ "travel_mate_app" ]
 
+
