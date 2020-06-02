@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package travel_mate;
+
+option go_package = "travel_matepb";
+
+
+//CandidateSource describes sources of this candidate, could be Google, Yelp or some other source.
+message CandidateSource {
+
+    string name = 1;
+    string id = 2;
+    float rating = 3;
+    int32 reviewCount = 4;
+}
+
+//ReviewAuthor described data model for author who adds a review
+message ReviewAuthor {
+    string profile_url = 1;
+    string image_url = 2;
+    string name = 3;
+}
+
+//Review desribes data model for user review
+message Review {
+
+    ReviewAuthor author = 1;
+    int32 rating = 2;
+    string relative_time_description = 3;
+    string text = 4;
+    string time = 5;
+    string source = 6;
+}
+
+
+message Coordinates {
+    double latitude = 1;
+    double longitude = 2;
+}
+
+//Candidate represents TravelMate Business data model
+message Candidate {
+
+    repeated CandidateSource sources = 1;
+    string name = 2;
+    bool is_closed = 3;
+    string website = 4;
+
+    Coordinates coordinates = 5;
+    string formatted_address = 6;
+    string price = 7;
+    string phone = 8;
+    string display_phone = 9;
+    double distance  = 10;
+    repeated string photos = 11;
+    repeated Review reviews = 12;
+    
+}
+
+//CandidateList represents TravelMate Business data model
+message CandidateList {
+	repeated Candidate candidates = 1;
+	int32 total = 2;
+}
+
+
+
+message PlaceSearchRequest {
+    string text = 1;
+    double latitude = 2;
+    double longitude = 3;
+    int32 radius = 4;
+}
+
+message PlaceSearchResponse {
+    repeated Candidate candidates = 1;
+}
+
+
+service PlaceSearchService {
+
+
+    rpc PlaceSearch(PlaceSearchRequest) returns (PlaceSearchResponse) {};
+
+    //rpc PlaceDetails()
+
+    //rpc PlacePhoto()
+}

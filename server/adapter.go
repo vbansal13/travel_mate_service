@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	travel_matepb "github.com/vbansal/travel_mate_service/proto_bufs"
 	"github.com/vbansal/travel_mate_service/services"
 )
 
@@ -59,16 +60,16 @@ type CandidateList struct {
 }
 
 //AppendSource adds another candidate source to received candidate
-func (c *Candidate) AppendSource(anotherCandidate Candidate) {
-	if c.SourceExists(anotherCandidate.Sources[0].Name) {
+func appendSource(sourceCandidate *travel_matepb.Candidate, anotherCandidate travel_matepb.Candidate) {
+	if sourceExists(sourceCandidate, anotherCandidate.Sources[0].Name) {
 		return
 	}
-	c.Sources = append(c.Sources, anotherCandidate.Sources[0])
+	sourceCandidate.Sources = append(sourceCandidate.Sources, anotherCandidate.Sources[0])
 }
 
 //SourceExists will find given source in the Candidate
-func (c *Candidate) SourceExists(sourceName string) bool {
-	for _, source := range c.Sources {
+func sourceExists(sourceCandidate *travel_matepb.Candidate, sourceName string) bool {
+	for _, source := range sourceCandidate.Sources {
 		if source.Name == sourceName {
 			return true
 		}
@@ -77,13 +78,16 @@ func (c *Candidate) SourceExists(sourceName string) bool {
 }
 
 //convertFromYelpModel converts YelpBusiness model to TravelMate Candidate model
-func convertFromYelpModel(yelpModel services.YelpBusiness) Candidate {
-	var candidate Candidate
+func convertFromYelpModel(yelpModel services.YelpBusiness) travel_matepb.Candidate {
+	var candidate travel_matepb.Candidate
 	candidate.Name = yelpModel.Name
 	candidate.Photos = append(candidate.Photos, yelpModel.ImageURL)
 	candidate.IsClosed = yelpModel.IsClosed
 	candidate.Website = yelpModel.URL
-	candidate.Coordinates = yelpModel.Coordinates
+	candidate.Coordinates = &travel_matepb.Coordinates{
+		Latitude:  yelpModel.Coordinates.Latitude,
+		Longitude: yelpModel.Coordinates.Longitude,
+	}
 	candidate.FormattedAddress = fmt.Sprintf("%s, %s", strings.Join(yelpModel.Location.DisplayAddress, ", "), yelpModel.Location.Country)
 	candidate.Price = yelpModel.Price
 	candidate.Phone = yelpModel.Phone
@@ -95,11 +99,11 @@ func convertFromYelpModel(yelpModel services.YelpBusiness) Candidate {
 	}
 
 	for _, review := range yelpModel.Reviews {
-		candidateReview := Review{
-			Author: ReviewAuthor{
+		candidateReview := &travel_matepb.Review{
+			Author: &travel_matepb.ReviewAuthor{
 				Name:       review.User.Name,
-				ProfileURL: review.User.ProfileURL,
-				ImageURL:   review.User.ImageURL,
+				ProfileUrl: review.User.ProfileURL,
+				ImageUrl:   review.User.ImageURL,
 			},
 			Text: review.Text,
 			Time: review.TimeCreated,
@@ -110,8 +114,8 @@ func convertFromYelpModel(yelpModel services.YelpBusiness) Candidate {
 		candidate.Reviews = append(candidate.Reviews, candidateReview)
 	}
 
-	source := CandidateSource{
-		ID:          yelpModel.ID,
+	source := &travel_matepb.CandidateSource{
+		Id:          yelpModel.ID,
 		Rating:      yelpModel.Rating,
 		ReviewCount: yelpModel.ReviewCount,
 		Name:        services.Yelp.String(),
@@ -124,9 +128,9 @@ func convertFromYelpModel(yelpModel services.YelpBusiness) Candidate {
 }
 
 //convertFromGoogleModel converts GoogleBusiness model to TravelMate Candidate model
-func convertFromGoogleModel(googleModel services.GoogleBusiness) Candidate {
+func convertFromGoogleModel(googleModel services.GoogleBusiness) travel_matepb.Candidate {
 
-	var candidate Candidate
+	var candidate travel_matepb.Candidate
 
 	candidate.Name = googleModel.Name
 	//candidate.ImageURL = googleModel.
@@ -145,11 +149,11 @@ func convertFromGoogleModel(googleModel services.GoogleBusiness) Candidate {
 	}
 
 	for _, review := range googleModel.Reviews {
-		candidateReview := Review{
-			Author: ReviewAuthor{
+		candidateReview := &travel_matepb.Review{
+			Author: &travel_matepb.ReviewAuthor{
 				Name:       review.AuthorName,
-				ProfileURL: review.AuthorURL,
-				ImageURL:   review.ProfilePhotoURL,
+				ProfileUrl: review.AuthorURL,
+				ImageUrl:   review.ProfilePhotoURL,
 			},
 			Text: review.Text,
 			/*Time: review.Time,*/   //TBD This needs to be converted to string time
@@ -160,8 +164,8 @@ func convertFromGoogleModel(googleModel services.GoogleBusiness) Candidate {
 		candidate.Reviews = append(candidate.Reviews, candidateReview)
 	}
 
-	source := CandidateSource{
-		ID:          googleModel.PlaceID,
+	source := &travel_matepb.CandidateSource{
+		Id:          googleModel.PlaceID,
 		Rating:      googleModel.Rating,
 		ReviewCount: 0,
 		Name:        services.Google.String(),
@@ -173,9 +177,9 @@ func convertFromGoogleModel(googleModel services.GoogleBusiness) Candidate {
 }
 
 func combinedCandidateList(googleBusinessList services.GoogleBusinessList,
-	yelpBusinessList services.YelpBusinessList) []Candidate {
-	candidates := []Candidate{}
-	googleCandidates := []Candidate{}
+	yelpBusinessList services.YelpBusinessList) []*travel_matepb.Candidate {
+	candidates := []*travel_matepb.Candidate{}
+	googleCandidates := []travel_matepb.Candidate{}
 	googleProcessedIndex := map[int]bool{}
 
 	for index, googleBusiness := range googleBusinessList.Candidates {
@@ -188,16 +192,16 @@ func combinedCandidateList(googleBusinessList services.GoogleBusinessList,
 		yelpCandidate := convertFromYelpModel(yelpBusiness)
 		for index, googleCandidate := range googleCandidates {
 			if strings.Contains(yelpCandidate.FormattedAddress, googleCandidate.FormattedAddress) {
-				yelpCandidate.AppendSource(googleCandidate)
+				appendSource(&yelpCandidate, googleCandidate)
 				googleProcessedIndex[index] = true
 			}
 		}
-		candidates = append(candidates, yelpCandidate)
+		candidates = append(candidates, &yelpCandidate)
 	}
 
 	for index, googleCandidate := range googleCandidates {
 		if googleProcessedIndex[index] == false {
-			candidates = append(candidates, googleCandidate)
+			candidates = append(candidates, &googleCandidate)
 		}
 	}
 	return candidates

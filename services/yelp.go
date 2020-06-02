@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vbansal/travel_mate_service/helpers"
+	travel_matepb "github.com/vbansal/travel_mate_service/proto_bufs"
 )
 
 var yelpAPIKey = "QukW_DfpYicraXEUIxX7OW8AbsDELMd8xu0YXZHKVZKJctc9x4CABR0uJTCw19vnpRQogbzTbedX-A5YW4zGfwSvqubQy9q3-XH4Q7iDTXnR16Xjr9th9eiaBxd8W3Yx"
@@ -14,7 +15,7 @@ type YelpBusinessReview struct {
 	ID          string `json:"id"`
 	URL         string `json:"url"`
 	Text        string `json:"text"`
-	Rating      int    `json:"rating"`
+	Rating      int32  `json:"rating"`
 	TimeCreated string `json:"time_created"`
 	User        struct {
 		ID         string `json:"id"`
@@ -39,12 +40,12 @@ type YelpBusiness struct {
 	ImageURL    string `json:"image_url"`
 	IsClosed    bool   `json:"is_closed"`
 	URL         string `json:"url"`
-	ReviewCount int    `json:"review_count"`
+	ReviewCount int32  `json:"review_count"`
 	Categories  []struct {
 		Alias string `json:"alias"`
 		Title string `json:"title"`
 	} `json:"categories"`
-	Rating      float64 `json:"rating"`
+	Rating      float32 `json:"rating"`
 	Coordinates struct {
 		Latitude  float64 `json:"latitude"`
 		Longitude float64 `json:"longitude"`
@@ -93,11 +94,26 @@ type YelpBusinessList struct {
 
 //searchPlacesOnYelp is a helper function for searching places that are around a given lat-long position
 //The passed params should describe lat-long position, radius and text that needs to be searched on Yelp
+/*
 func searchPlacesOnYelp(reqParams helpers.ClientRequestParams, serviceChannel chan ResponseData) {
 
 	reqPath := "search"
 
 	uRL := fmt.Sprintf("%s/%s?term=%s&latitude=%s&longitude=%s&radius=%s", yelpHost, reqPath, reqParams.Text, reqParams.Latitude, reqParams.Longitude, reqParams.Radius)
+
+	reqHeaders := map[string]string{
+		"Authorization": fmt.Sprintf("Bearer %s", yelpAPIKey),
+	}
+	makeNetworkRequest("GET", reqHeaders, uRL, Yelp, serviceChannel)
+}
+*/
+
+func searchPlacesOnYelp(reqParams travel_matepb.PlaceSearchRequest, serviceChannel chan ResponseData) {
+
+	reqPath := "search"
+
+	uRL := fmt.Sprintf("%s/%s?term=%s&latitude=%s&longitude=%s&radius=%s", yelpHost, reqPath, reqParams.GetText(),
+		reqParams.GetLatitude(), reqParams.GetLongitude(), reqParams.GetRadius())
 
 	reqHeaders := map[string]string{
 		"Authorization": fmt.Sprintf("Bearer %s", yelpAPIKey),

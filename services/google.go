@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vbansal/travel_mate_service/helpers"
+	travel_matepb "github.com/vbansal/travel_mate_service/proto_bufs"
 )
 
 var googleAPIKey = "AIzaSyA72CWmMBvvOhov3sbkcmyBHTC9yb4NCAo"
@@ -61,7 +62,7 @@ type GoogleBusiness struct {
 		PhotoReference   string   `json:"photo_reference"`
 		Width            int      `json:"width"`
 	} `json:"photos"`
-	Rating   float64 `json:"rating"`
+	Rating   float32 `json:"rating"`
 	PlusCode struct {
 		CompoundCode string `json:"compound_code"`
 		GlobalCode   string `json:"global_code"`
@@ -86,7 +87,7 @@ type GoogleBusiness struct {
 		AuthorURL               string `json:"author_url"`
 		Language                string `json:"language"`
 		ProfilePhotoURL         string `json:"profile_photo_url"`
-		Rating                  int    `json:"rating"`
+		Rating                  int32  `json:"rating"`
 		RelativeTimeDescription string `json:"relative_time_description"`
 		Text                    string `json:"text"`
 		Time                    int    `json:"time"`
@@ -110,7 +111,7 @@ type GoogleBusinessList struct {
 
 //searchPlacesOnGoogle is a helper function for searching places that are around a given lat-long position
 //The passed params should describe lat-long position, radius and text that needs to be searched on Yelp
-func searchPlacesOnGoogle(reqParams helpers.ClientRequestParams, serviceChannel chan ResponseData) {
+/*func searchPlacesOnGoogle(reqParams helpers.ClientRequestParams, serviceChannel chan ResponseData) {
 
 	path := "nearbysearch/json"
 
@@ -118,6 +119,19 @@ func searchPlacesOnGoogle(reqParams helpers.ClientRequestParams, serviceChannel 
 	//https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=thai%20food&location=34.387616,-118.597237&key=AIzaSyA72CWmMBvvOhov3sbkcmyBHTC9yb4NCAo&radius=9000
 	uRL := fmt.Sprintf("%s/%s?keyword=%s&radius=%s&location=%s,%s&key=%s", googleHost, path,
 		reqParams.Text, reqParams.Radius, reqParams.Latitude, reqParams.Longitude, googleAPIKey)
+
+	reqHeaders := map[string]string{}
+	makeNetworkRequest("GET", reqHeaders, uRL, Google, serviceChannel)
+}*/
+
+func searchPlacesOnGoogle(reqParams travel_matepb.PlaceSearchRequest, serviceChannel chan ResponseData) {
+
+	path := "nearbysearch/json"
+
+	//https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=indian%20food&inputtype=textquery&fields=photos,formatted_address,name,opening_hours,rating,price_level&locationbias=circle:9000@34.387616,-118.597237&key=AIzaSyA72CWmMBvvOhov3sbkcmyBHTC9yb4NCAo
+	//https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=thai%20food&location=34.387616,-118.597237&key=AIzaSyA72CWmMBvvOhov3sbkcmyBHTC9yb4NCAo&radius=9000
+	uRL := fmt.Sprintf("%s/%s?keyword=%s&radius=%s&location=%s,%s&key=%s", googleHost, path,
+		reqParams.GetText(), reqParams.GetRadius(), reqParams.GetLatitude(), reqParams.GetLongitude(), googleAPIKey)
 
 	reqHeaders := map[string]string{}
 	makeNetworkRequest("GET", reqHeaders, uRL, Google, serviceChannel)

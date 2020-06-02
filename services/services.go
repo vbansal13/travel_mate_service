@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/vbansal/travel_mate_service/helpers"
+	travel_matepb "github.com/vbansal/travel_mate_service/proto_bufs"
 )
 
 //Types respresents all supported services types available
@@ -46,7 +47,20 @@ type ResponseData struct {
 
 //SearchPlaces is a helper function for searching places that are around a given lat-long position
 //The passed params should describe lat-long position, radius and text that needs to be searched on given serviceType
+/*
 func SearchPlaces(serviceType Types, reqParams helpers.ClientRequestParams, serviceChannel chan ResponseData) {
+	switch serviceType {
+	case Yelp:
+		searchPlacesOnYelp(reqParams, serviceChannel)
+	case Google:
+		searchPlacesOnGoogle(reqParams, serviceChannel)
+	}
+}
+*/
+
+//SearchPlaces is a helper function for searching places that are around a given lat-long position
+//The passed params should describe lat-long position, radius and text that needs to be searched on given serviceType
+func SearchPlaces(serviceType Types, reqParams travel_matepb.PlaceSearchRequest, serviceChannel chan ResponseData) {
 	switch serviceType {
 	case Yelp:
 		searchPlacesOnYelp(reqParams, serviceChannel)
