@@ -1,0 +1,90 @@
+{
+	"info": {
+		"_postman_id": "0298d210-4c84-40e2-b25f-be58d17a65b8",
+		"name": "Travel-Mate",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/v1place/search",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/v1/places/search?text=thai%20food&latitude=34.387616&longitude=-118.597237&radius=9000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"v1",
+						"places",
+						"search"
+					],
+					"query": [
+						{
+							"key": "text",
+							"value": "thai%20food"
+						},
+						{
+							"key": "latitude",
+							"value": "34.387616"
+						},
+						{
+							"key": "longitude",
+							"value": "-118.597237"
+						},
+						{
+							"key": "radius",
+							"value": "9000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/v1place/details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8082/v1/places/details?google_id=ChIJfaGnPG2HwoARX8kQs682oeU",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"v1",
+						"places",
+						"details"
+					],
+					"query": [
+						{
+							"key": "google_id",
+							"value": "ChIJfaGnPG2HwoARX8kQs682oeU"
+						},
+						{
+							"key": "yelp_id",
+							"value": "p91CUDBmiRkkHJgI0q1Uow",
+							"disabled": true
+						},
+						{
+							"key": "longitude",
+							"value": "-118.597237",
+							"disabled": true
+						},
+						{
+							"key": "radius",
+							"value": "9000",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
